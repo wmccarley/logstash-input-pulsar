@@ -111,7 +111,10 @@ public class Pulsar implements Input {
 
     private static final PluginConfigSpec<String> CONFIG_TLS_CLIENT_KEY_FILE_PATH =
             PluginConfigSpec.stringSetting("tls_client_key_file_path","");
-
+    
+    private static final PluginConfigSpec<String> CONFIG_TLS_TRUST_CERTS_FILE_PATH =
+            PluginConfigSpec.stringSetting("tls_trust_certs_file_path","");
+    
     private static final PluginConfigSpec<String> CONFIG_AUTH_PLUGIN_CLASS_NAME =
             PluginConfigSpec.stringSetting("auth_plugin_class_name",authPluginClassName);
 
@@ -186,21 +189,21 @@ public class Pulsar implements Input {
                 } else {
                     String tlsClientCertFilePath = config.get(CONFIG_TLS_CLIENT_CERT_FILE_PATH);
                     String tlsClientKeyFilePath = config.get(CONFIG_TLS_CLIENT_KEY_FILE_PATH);
+                    String tlsTrustCertsFilePath = config.get(CONFIG_TLS_TRUST_CERTS_FILE_PATH);
 
                     logger.info("Attempting to create TLS Pulsar client to {} using protocols: [{}], ciphers: [{}]," +
-                                "allowTlsInsecureConnection={}, enableTlsHostnameVerification={}, the trust store " +
+                                "allowTlsInsecureConnection={}, enableTlsHostnameVerification={}, the trust cert pem " +
                                 "located at: {}, client certificate located at: {} and the private key located at: {}",
                                  serviceUrl, String.join(", ", protocolSet), String.join(", ",cipherSet),
-                                 allowTlsInsecureConnection, enableTlsHostnameVerification, tlsTrustStorePath,
+                                 allowTlsInsecureConnection, enableTlsHostnameVerification, tlsTrustCertsFilePath,
                                  tlsClientCertFilePath, tlsClientKeyFilePath);
                     client = PulsarClient.builder()
                              .serviceUrl(serviceUrl)
-                             .tlsCiphers(cipherSet)
-                             .tlsProtocols(protocolSet)
+                             //.tlsCiphers(cipherSet)
+                             //.tlsProtocols(protocolSet)
                              .allowTlsInsecureConnection(allowTlsInsecureConnection)
                              .enableTlsHostnameVerification(enableTlsHostnameVerification)
-                             .tlsTrustStorePath(tlsTrustStorePath)
-                             .tlsTrustStorePassword(config.get(CONFIG_TLS_TRUST_STORE_PASSWORD))
+                             .tlsTrustCertsFilePath(tlsTrustCertsFilePath)
                              .authentication(new AuthenticationTls(tlsClientCertFilePath,tlsClientKeyFilePath))
                              .build();
                     logger.info("TLS Pulsar client successfully created with file-system cert/key pair");
@@ -376,6 +379,7 @@ public class Pulsar implements Input {
                 CONFIG_TLS_TRUST_STORE_PASSWORD,
                 CONFIG_TLS_CLIENT_CERT_FILE_PATH,
                 CONFIG_TLS_CLIENT_KEY_FILE_PATH,
+                CONFIG_TLS_TRUST_CERTS_FILE_PATH,
                 CONFIG_AUTH_PLUGIN_CLASS_NAME,
                 CONFIG_CIPHERS,
                 CONFIG_PROTOCOLS
