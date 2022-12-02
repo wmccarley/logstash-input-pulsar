@@ -368,7 +368,17 @@ public class Pulsar implements Input {
                 CONFIG_SUBSCRIPTION_TYPE,
                 CONFIG_SUBSCRIPTION_INITIAL_POSITION,
                 CONFIG_CONSUMER_NAME,
-                CONFIG_CODEC
+                CONFIG_CODEC,
+                CONFIG_ENABLE_TLS,
+                CONFIG_ALLOW_TLS_INSECURE_CONNECTION,
+                CONFIG_ENABLE_TLS_HOSTNAME_VERIFICATION,
+                CONFIG_TLS_TRUST_STORE_PATH,
+                CONFIG_TLS_TRUST_STORE_PASSWORD,
+                CONFIG_TLS_CLIENT_CERT_FILE_PATH,
+                CONFIG_TLS_CLIENT_KEY_FILE_PATH,
+                CONFIG_AUTH_PLUGIN_CLASS_NAME,
+                CONFIG_CIPHERS,
+                CONFIG_PROTOCOLS
         );
     }
 
