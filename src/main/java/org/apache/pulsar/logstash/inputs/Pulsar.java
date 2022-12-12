@@ -102,8 +102,23 @@ public class Pulsar implements Input {
     private static final PluginConfigSpec<Long> CONFIG_BATCH_TIMEOUT_MILLISECONDS =
             PluginConfigSpec.numSetting("batch_timeout_milliseconds",1000);
 
+    private static final PluginConfigSpec<Boolean> CONFIG_BATCH_INDEX_ACKNOWLEDGEMENT_ENABLED =
+            PluginConfigSpec.booleanSetting("batch_index_acknowledgement_enabled",false);
+
     private static final PluginConfigSpec<Long> CONFIG_RECEIVER_QUEUE_SIZE =
             PluginConfigSpec.numSetting("receiver_queue_size",1000);
+
+    private static final PluginConfigSpec<Long> CONFIG_MAX_TOTAL_RECEIVER_QUEUE_SIZE_ACROSS_PARTITIONS =
+            PluginConfigSpec.numSetting("max_total_receiver_queue_size_across_partitions",50000);
+
+    private static final PluginConfigSpec<Boolean> CONFIG_POOL_MESSAGES =
+            PluginConfigSpec.booleanSetting("pool_mesages",false);
+
+    private static final PluginConfigSpec<Boolean> CONFIG_AUTO_UPDATE_PARTITIONS =
+            PluginConfigSpec.booleanSetting("auto_update_partitions",true);
+
+    private static final PluginConfigSpec<Long> CONFIG_AUTO_UPDATE_PARTITIONS_INTERVAL_SECONDS =
+            PluginConfigSpec.numSetting("auto_update_partitions_interval_seconds",60);
 
     // TLS Config
     private static final String authPluginClassName = "org.apache.pulsar.client.impl.auth.AuthenticationKeyStoreTls";
@@ -259,8 +274,24 @@ public class Pulsar implements Input {
                     .build();
                 consumerBuilder.batchReceivePolicy(batchReceivePolicy);
             }
+            boolean batchIndexAcknowledgementEnabled = config.get(CONFIG_BATCH_INDEX_ACKNOWLEDGEMENT_ENABLED);
+            consumerBuilder.enableBatchIndexAcknowledgment(batchIndexAcknowledgementEnabled);
+
+            boolean autoUpdatePartitions = config.get(CONFIG_AUTO_UPDATE_PARTITIONS);
+            consumerBuilder.autoUpdatePartitions(autoUpdatePartitions);
+            if(autoUpdatePartitions) {
+                int autoUpdatePartitionsIntervalSeconds = Math.toIntExact((Long)config.get(CONFIG_AUTO_UPDATE_PARTITIONS_INTERVAL_SECONDS));
+                consumerBuilder.autoUpdatePartitionsInterval(autoUpdatePartitionsIntervalSeconds, TimeUnit.SECONDS);
+            }
 
             int maxReceiverQueueSize = Math.toIntExact((Long)config.get(CONFIG_RECEIVER_QUEUE_SIZE));
+            consumerBuilder.receiverQueueSize(maxReceiverQueueSize);
+
+            int maxTotalReceiverQueueSizeAcrossPartitions = Math.toIntExact((Long)config.get(CONFIG_MAX_TOTAL_RECEIVER_QUEUE_SIZE_ACROSS_PARTITIONS));
+            consumerBuilder.maxTotalReceiverQueueSizeAcrossPartitions(maxTotalReceiverQueueSizeAcrossPartitions);
+            
+            boolean poolMessages = config.get(CONFIG_POOL_MESSAGES);
+            consumerBuilder.poolMessages(poolMessages);
             pulsarConsumer = consumerBuilder.subscribe();
             logger.info("Create subscription {} on topics {} with codec {}, consumer name is {},subscription Type is {},subscriptionInitialPosition is {}", subscriptionName, topics, codec , consumerName, subscriptionType, subscriptionInitialPosition);
 
@@ -443,6 +474,11 @@ public class Pulsar implements Input {
                 CONFIG_BATCH_MAX_NUM_BYTES,
                 CONFIG_BATCH_MAX_NUM_MESSAGES,
                 CONFIG_BATCH_TIMEOUT_MILLISECONDS,
+                CONFIG_BATCH_INDEX_ACKNOWLEDGEMENT_ENABLED,
+                CONFIG_POOL_MESSAGES,
+                CONFIG_AUTO_UPDATE_PARTITIONS,
+                CONFIG_AUTO_UPDATE_PARTITIONS_INTERVAL_SECONDS,
+                CONFIG_MAX_TOTAL_RECEIVER_QUEUE_SIZE_ACROSS_PARTITIONS,
                 CONFIG_RECEIVER_QUEUE_SIZE,
                 CONFIG_ENABLE_TLS,
                 CONFIG_ALLOW_TLS_INSECURE_CONNECTION,
